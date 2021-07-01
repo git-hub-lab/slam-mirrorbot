@@ -47,7 +47,7 @@ def _tamilyogi(bot: Bot, update, isTar=False):
     except DirectDownloadLinkException as e:
       LOGGER.info(f'{link}: {e}')
       sendMessage(f"ERROR: {e}", bot, update)
-        return
+      return
     reply_to = update.message.reply_to_message
     if reply_to is not None:
         tag = reply_to.from_user.username
