@@ -23,6 +23,8 @@ class _BotCommands:
         self.CountCommand = 'count'
         self.WatchCommand = 'watch'
         self.TarWatchCommand = 'tarwatch'
+        self.TamilyogiCommand = 'tamilyogi'
+        self.TarTamilyogiCommand = 'tartamilyogi'
         self.DeleteCommand = 'del'
         self.UsageCommand = 'usage'
         self.MediaInfoCommand = 'mediainfo'
