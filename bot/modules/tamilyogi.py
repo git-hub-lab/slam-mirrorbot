@@ -7,6 +7,7 @@ from bot.helper.mirror_utils.download_utils.aria2_download import AriaDownloadHe
 from .mirror import MirrorListener
 from bot.helper.telegram_helper.bot_commands import BotCommands
 from bot.helper.telegram_helper.filters import CustomFilters
+from bot.helper.ext_utils.exceptions import DirectDownloadLinkException
 from bs4 import BeautifulSoup
 import requests
 
@@ -33,14 +34,20 @@ def _tamilyogi(bot: Bot, update, isTar=False):
           raise IndexError
       else:
         qual = message_args[2]
-      if qual != "audio":
-        qual = f'bestvideo[height<={qual}]+bestaudio/best[height<={qual}]'
+      if not qual:
+        qual = "720"
     except IndexError:
-      qual = "bestvideo+bestaudio/best"
+      qual = "720"
     try:
       name = name_args[1]
     except IndexError:
       name = ""
+    try:
+      link = tamilyogidl(link, qual)
+    except DirectDownloadLinkException as e:
+      LOGGER.info(f'{link}: {e}')
+      sendMessage(f"ERROR: {e}", bot, update)
+        return
     reply_to = update.message.reply_to_message
     if reply_to is not None:
         tag = reply_to.from_user.username
@@ -54,6 +61,57 @@ def _tamilyogi(bot: Bot, update, isTar=False):
     sendStatusMessage(update, bot)
     if len(Interval) == 0:
         Interval.append(setInterval(DOWNLOAD_STATUS_UPDATE_INTERVAL, update_all_messages))
+
+
+def tamilyogidl(link: str, quality):
+    if not link:
+        raise DirectDownloadLinkException("`No links found!`")
+    elif 'tamilyogi' not in link:
+        raise DirectDownloadLinkException(f"Please Send Tamilyogi Link.")
+    else:
+        return tamilyogi_dl(link, quality)
+
+    
+def tamilyogi_dl(url, quality):
+	quality = check_quality(quality)
+	if quality == "HD 720p" or quality == "NQ 360p" or quality == "LQ 240p":
+		req = requests.get(url)
+		if req.status_code == 200:
+			soup = BeautifulSoup(req.content, 'html.parser')
+			iframe = soup.find("iframe")
+			if iframe:
+				link  = tamilyogi_get_dl(iframe["src"], quality)
+				if link:
+					return link
+				else:
+					 DirectDownloadLinkException("Unknown Error")
+			else:
+				 DirectDownloadLinkException("Unknown URl")
+		else:
+			 DirectDownloadLinkException(f"There's Some Issue With Your URL\nStatus Code:- {req.status_code}\nReason:- {req.reason}")
+	else:
+		 DirectDownloadLinkException("Wrong Quality")
+
+
+def check_quality(quality):
+	if quality == "720p" or quality == "720" or quality == "HD 720p":
+		return "HD 720p"
+	elif quality == "360p" or quality == "360" or quality == "NQ 360p":
+		return "NQ 360p"
+	elif quality == "240p" or quality == "240" or quality == "LQ 240p":
+		return "LQ 240p"
+	else:
+		return quality
+
+
+def tamilyogi_get_dl(url, quality):
+    headers_mobile = { 'User-Agent' : 'Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B137 Safari/601.1'}
+    req = requests.get(url, headers=headers_mobile)
+    soup = BeautifulSoup(req.content, 'html.parser')
+    for a in soup.findAll('a', href=True):
+        if quality == a.text:
+            link = a["href"].replace(" ","%C2%A0")
+            return link
 
 
 def tamilyogiTar(update, context):
