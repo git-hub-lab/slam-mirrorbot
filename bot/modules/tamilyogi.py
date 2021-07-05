@@ -23,7 +23,7 @@ def _tamilyogi(bot: Bot, update, isTar=False):
         msg += "<b>Note: Quality and custom name are optional</b>\n\Qualities Are: 720, 360, 240."
         msg += "\n\nIf you want to use custom filename, enter it after |"
         msg += f"\n\nExample:\n<code>/{BotCommands.TamilyogiCommand} http://tamilyogi.best/the-tomorrow-war-2021-tamil-dubbed-movie-hd-720p-watch-online/ 720 | The Tomorrow War (2021)</code>\n\n"
-        msg += "This file will be downloaded in 720p quality and it's name will be <b> Therrow War ( Tomo2021)</b>"
+        msg += "This file will be downloaded in 720p quality and it's name will be <b> The Tomorrow War (2021)</b>"
         sendMessage(msg, bot, update)
         return
     try:
