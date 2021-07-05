@@ -19,11 +19,11 @@ def _tamilyogi(bot: Bot, update, isTar=False):
     try:
         link = message_args[1]
     except IndexError:
-        msg = f"/{BotCommands.WatchCommand} [youtube-dl supported link] [quality] |[CustomName] to mirror with youtube-dl.\n\n"
-        msg += "<b>Note: Quality and custom name are optional</b>\n\nExample of quality: audio, 144, 240, 360, 480, 720, 1080, 2160."
+        msg = f"/{BotCommands.TamilyogiCommand} [TamilYogi supported link] [quality] |[CustomName] to mirror with TamilYogi.\n\n"
+        msg += "<b>Note: Quality and custom name are optional</b>\n\Qualities Are: 720, 360, 240."
         msg += "\n\nIf you want to use custom filename, enter it after |"
-        msg += f"\n\nExample:\n<code>/{BotCommands.WatchCommand} https://youtu.be/Pk_TthHfLeE 720 |Slam</code>\n\n"
-        msg += "This file will be downloaded in 720p quality and it's name will be <b>Slam</b>"
+        msg += f"\n\nExample:\n<code>/{BotCommands.TamilyogiCommand} http://tamilyogi.best/the-tomorrow-war-2021-tamil-dubbed-movie-hd-720p-watch-online/ 720 | The Tomorrow War (2021)</code>\n\n"
+        msg += "This file will be downloaded in 720p quality and it's name will be <b> Therrow War ( Tomo2021)</b>"
         sendMessage(msg, bot, update)
         return
     try:
@@ -59,38 +59,50 @@ def _tamilyogi(bot: Bot, update, isTar=False):
     ariaDlManager.start_listener()
     ariaDlManager.add_download(link, f'{DOWNLOAD_DIR}/{listener.uid}/', listener, name)
     sendStatusMessage(update, bot)
+    sendStatusMessage(update, bot)
     if len(Interval) == 0:
         Interval.append(setInterval(DOWNLOAD_STATUS_UPDATE_INTERVAL, update_all_messages))
 
 
-def tamilyogidl(link: str, quality):
-    if not link:
-        raise DirectDownloadLinkException("`No links found!`")
-    elif 'tamilyogi' not in link:
-        raise DirectDownloadLinkException(f"Please Send Tamilyogi Link.")
-    else:
-        return tamilyogi_dl(link, quality)
+def tamilyogidl(link, quality):
+  error, result = tamilyogi_dl(url, quality)
+  if error:
+    raise DirectDownloadLinkException(result)
+  else:
+    return result
 
-    
+
 def tamilyogi_dl(url, quality):
 	quality = check_quality(quality)
-	if quality == "HD 720p" or quality == "NQ 360p" or quality == "LQ 240p":
-		req = requests.get(url)
-		if req.status_code == 200:
-			soup = BeautifulSoup(req.content, 'html.parser')
-			iframe = soup.find("iframe")
-			if iframe:
-				link  = tamilyogi_get_dl(iframe["src"], quality)
-				if link:
-					return link
+	error = None
+	if "tamilyogi" in url:
+		if quality == "HD 720p" or quality == "NQ 360p" or quality == "LQ 240p":
+			req = requests.get(url)
+			if req.status_code == 200:
+				soup = BeautifulSoup(req.content, 'html.parser')
+				iframe = soup.find("iframe")
+				if iframe:
+					link  = tamilyogi_get_dl(iframe["src"])
+					if link:
+						if quality in link:
+							link = link[quality]
+						else:
+							error =	"Unknown Error"
+					else:
+						error =	"Unknown Error"
 				else:
-					 DirectDownloadLinkException("Unknown Error")
+					error = "Unknown URL"
 			else:
-				 DirectDownloadLinkException("Unknown URl")
+				error = f"There's Some Issue With Your URL\nStatus Code:- {req.status_code}\nReason:- {req.reason}"
 		else:
-			 DirectDownloadLinkException(f"There's Some Issue With Your URL\nStatus Code:- {req.status_code}\nReason:- {req.reason}")
+			error = "Wrong Quality"
 	else:
-		 DirectDownloadLinkException("Wrong Quality")
+		error = "Please Send Tamilyogi Link"
+
+	if error:
+		return True, error
+	else:
+		return False, link
 
 
 def check_quality(quality):
@@ -104,14 +116,14 @@ def check_quality(quality):
 		return quality
 
 
-def tamilyogi_get_dl(url, quality):
-    headers_mobile = { 'User-Agent' : 'Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B137 Safari/601.1'}
-    req = requests.get(url, headers=headers_mobile)
-    soup = BeautifulSoup(req.content, 'html.parser')
-    for a in soup.findAll('a', href=True):
-        if quality == a.text:
-            link = a["href"].replace(" ","%C2%A0")
-            return link
+def tamilyogi_get_dl(url):
+	headers_mobile = { 'User-Agent' : 'Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B137 Safari/601.1'}
+	req = requests.get(url, headers=headers_mobile)
+	soup = BeautifulSoup(req.content, 'html.parser')
+	link = {}
+	for a in soup.findAll('a', href=True):
+		link[a.text] = a["href"].replace(" ","%C2%A0")
+	return link
 
 
 def tamilyogiTar(update, context):
