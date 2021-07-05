@@ -65,7 +65,7 @@ def _tamilyogi(bot: Bot, update, isTar=False):
 
 
 def tamilyogidl(link, quality):
-  error, result = tamilyogi_dl(url, quality)
+  error, result = tamilyogi_dl(link, quality)
   if error:
     raise DirectDownloadLinkException(result)
   else:
