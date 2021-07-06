@@ -59,7 +59,6 @@ def _tamilyogi(bot: Bot, update, isTar=False):
     ariaDlManager.start_listener()
     ariaDlManager.add_download(link, f'{DOWNLOAD_DIR}/{listener.uid}/', listener, name)
     sendStatusMessage(update, bot)
-    sendStatusMessage(update, bot)
     if len(Interval) == 0:
         Interval.append(setInterval(DOWNLOAD_STATUS_UPDATE_INTERVAL, update_all_messages))
 
